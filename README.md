@@ -119,3 +119,8 @@ function createPage(html, scriptTag) {
 }
 ```
 
+## API
+
+Please refer to the example, as it exercises the entire API. Docs will
+come eventually :)
+
