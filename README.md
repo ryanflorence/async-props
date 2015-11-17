@@ -69,19 +69,6 @@ class App extends React.Component {
   }
 }
 
-// with createClass
-var App = React.createClass({
-  statics: {
-    loadProps: function(params, cb) {
-      cb(null, {
-        tacos: [ 'Pollo', 'Carnitas' ]
-      })
-    }
-  },
-
-  // ...
-})
-
 // 3. Render `Router` with custom RoutingContext
 render((
   <Router RoutingContext={AsyncProps}>
