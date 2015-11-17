@@ -9,9 +9,9 @@
   },
   "bugs": "https://github.com/rackt/react-router-async-props/issues",
   "scripts": {
-    "build": "babel ./modules --stage 0 --loose all --plugins dev-expression -d lib --ignore '__tests__'",
-    "build-umd": "NODE_ENV=production webpack modules/index.js umd/AsyncProps.js",
-    "build-min": "NODE_ENV=production webpack -p modules/index.js umd/AsyncProps.min.js",
+    "build": "babel ./modules --stage 0 --loose all -d lib --ignore '__tests__'",
+    "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
+    "build-min": "NODE_ENV=production webpack -p modules/AsyncProps.js umd/AsyncProps.min.js",
     "lint": "eslint modules",
     "start": "webpack-dev-server -d --content-base ./ --history-api-fallback --inline modules/index.js",
     "test": "npm run lint && karma start",
