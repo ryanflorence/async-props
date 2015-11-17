@@ -4,6 +4,10 @@ import RoutingContext from 'react-router/lib/RoutingContext'
 
 const { array, func, object } = React.PropTypes
 
+function last(arr) {
+  return arr[arr.length - 1]
+}
+
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
     if (typeof components[i] === 'object') {
@@ -144,9 +148,17 @@ class AsyncPropsContainer extends React.Component {
 
   render() {
     const { Component, routerProps } = this.props
-    const { propsAndComponents, loading } = this.context.asyncProps
+    const { propsAndComponents, loading, reloadComponent } = this.context.asyncProps
     const asyncProps = lookupPropsForComponent(Component, propsAndComponents)
-    return <Component {...routerProps} {...asyncProps} loading={loading} />
+    const reload = () => reloadComponent(Component)
+    return (
+      <Component
+        {...routerProps}
+        {...asyncProps}
+        reloadAsyncProps={reload}
+        loading={loading}
+      />
+    )
   }
 
 }
@@ -192,7 +204,16 @@ class AsyncProps extends React.Component {
   }
 
   getChildContext() {
-    return { asyncProps: this.state }
+    const { loading, propsAndComponents } = this.state
+    return {
+      asyncProps: {
+        loading,
+        propsAndComponents,
+        reloadComponent: (Component) => {
+          this.reloadComponent(Component)
+        }
+      }
+    }
   }
 
   componentDidMount() {
@@ -209,10 +230,14 @@ class AsyncProps extends React.Component {
     const newComponents = filterAndFlattenComponents(nextProps.components)
     let components = arrayDiff(oldComponents, newComponents)
 
-    const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
-    const isPivot = paramsChanged && components.length === 0
-    if (isPivot)
-      components = [ newComponents[newComponents.length - 1] ]
+    if (components.length === 0) {
+      const sameComponents = shallowEqual(oldComponents, newComponents)
+      if (sameComponents) {
+        const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
+        if (paramsChanged)
+          components = [ last(newComponents) ]
+      }
+    }
 
     if (components.length > 0)
       this.loadAsyncProps(components, nextProps.params, nextProps.location)
@@ -231,7 +256,7 @@ class AsyncProps extends React.Component {
     this._unmounted = true
   }
 
-  loadAsyncProps(components, params, location) {
+  loadAsyncProps(components, params, location, options) {
     this.setState({
       loading: true,
       prevProps: this.props
@@ -240,7 +265,13 @@ class AsyncProps extends React.Component {
       filterAndFlattenComponents(components),
       params,
       this.handleError((err, propsAndComponents) => {
-        if (this.props.location === location && !this._unmounted) {
+        const force = options && options.force
+        const sameLocation = this.props.location === location
+        // FIXME: next line has potential (rare) race conditions I think. If
+        // somebody calls reloadAsyncProps, changes location, then changes
+        // location again before its done and state gets out of whack (Rx folks
+        // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
+        if ((force || sameLocation) && !this._unmounted) {
           if (this.state.propsAndComponents) {
             propsAndComponents = mergePropsAndComponents(
               this.state.propsAndComponents,
@@ -255,6 +286,11 @@ class AsyncProps extends React.Component {
         }
       })
     )
+  }
+
+  reloadComponent(Component) {
+    const { params } = this.props
+    this.loadAsyncProps([ Component ], params, null, { force: true })
   }
 
   render() {

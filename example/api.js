@@ -7,12 +7,16 @@ function setToken(req) {
 }
 
 function getJSON(url, cb) {
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function () {
     if (req.status === 404) {
       cb(new Error('not found'));
     } else {
-      cb(null, JSON.parse(req.response));
+      // fake spotty server
+      const time = Math.random() * 1000
+      setTimeout(() => {
+        cb(null, JSON.parse(req.response));
+      }, time)
     }
   };
   req.open('GET', url);
@@ -23,7 +27,7 @@ function getJSON(url, cb) {
 function postJSON(url, obj, cb) {
   var req = new XMLHttpRequest();
   req.onload = function () {
-    cb(JSON.parse(req.response));
+    cb(null, JSON.parse(req.response));
   };
   req.open('POST', url);
   req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
@@ -62,7 +66,7 @@ export function fetchContacts(cb) {
   })
 }
 
-export function deleteContact(contactId) {
+export function deleteContact(contactId, cb) {
   deleteJSON(`${API}/contacts/${contactId}`, cb)
 }
 
