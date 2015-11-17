@@ -132,7 +132,7 @@ function Index() {
       <h2>About</h2>
       <p>
         AsyncProps let you co-locate your data fetching with your
-        route components without any data loading opinions. You don't
+        route components without any data loading opinions. You don’t
         even need any caching.
       </p>
       <p><b>Note:</b> There is a random delay up to 1 second added to every request.</p>
