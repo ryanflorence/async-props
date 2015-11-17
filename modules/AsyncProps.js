@@ -103,26 +103,6 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-class AsyncPropsContainer extends React.Component {
-
-  static propTypes = {
-    Component: func.isRequired,
-    routerProps: object.isRequired
-  }
-
-  static contextTypes = {
-    asyncProps: object.isRequired
-  }
-
-  render() {
-    const { Component, routerProps } = this.props
-    const { propsAndComponents, loading } = this.context.asyncProps
-    const asyncProps = lookupPropsForComponent(Component, propsAndComponents)
-    return <Component {...routerProps} {...asyncProps} loading={loading} />
-  }
-
-}
-
 export function loadPropsOnServer({ components, params }, cb) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
@@ -148,6 +128,27 @@ function hydrate(props) {
     }
   else
     return null
+}
+
+
+class AsyncPropsContainer extends React.Component {
+
+  static propTypes = {
+    Component: func.isRequired,
+    routerProps: object.isRequired
+  }
+
+  static contextTypes = {
+    asyncProps: object.isRequired
+  }
+
+  render() {
+    const { Component, routerProps } = this.props
+    const { propsAndComponents, loading } = this.context.asyncProps
+    const asyncProps = lookupPropsForComponent(Component, propsAndComponents)
+    return <Component {...routerProps} {...asyncProps} loading={loading} />
+  }
+
 }
 
 class AsyncProps extends React.Component {
