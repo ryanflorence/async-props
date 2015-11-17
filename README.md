@@ -39,8 +39,6 @@ to brush up the repository and add a few more tests.
 
 ## Usage
 
-### Client
-
 ```js
 import { Router, Route } from 'react-router'
 import AsyncProps from 'async-props'
