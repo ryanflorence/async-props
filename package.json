@@ -5,9 +5,9 @@
   "main": "lib/AsyncProps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rackt/react-router-async-props.git"
+    "url": "https://github.com/rackt/async-props.git"
   },
-  "bugs": "https://github.com/rackt/react-router-async-props/issues",
+  "bugs": "https://github.com/rackt/async-props/issues",
   "scripts": {
     "build": "babel ./modules --stage 0 --loose all -d lib --ignore '__tests__'",
     "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
