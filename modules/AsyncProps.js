@@ -40,6 +40,11 @@ function loadAsyncProps(components, params, cb) {
       cb(null, { propsArray, componentsArray })
   }
 
+  // If there is no components we should resolve directly
+  if (needToLoadCounter === 0) {
+    return maybeFinish()
+  }
+
   components.forEach((Component, index) => {
     Component.loadProps(params, (error, props) => {
       needToLoadCounter--
