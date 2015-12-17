@@ -3,6 +3,8 @@
 [![npm package](https://img.shields.io/npm/v/async-props.svg?style=flat-square)](https://www.npmjs.org/package/async-props)
 [![#rackt on freenode](https://img.shields.io/badge/irc-rackt_on_freenode-61DAFB.svg?style=flat-square)](https://webchat.freenode.net/)
 
+Co-located data loading for React Router apps. Data is loaded before the new screen renders. It is designed to be both a useful solution for many apps, as well as a reference implementation for integrating data with React Router (stuff like redux, relay, falcor etc).
+
 ## Docs & Help
 
 - [Changelog](/CHANGES.md)
