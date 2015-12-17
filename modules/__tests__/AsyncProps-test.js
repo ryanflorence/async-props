@@ -236,7 +236,7 @@ describe('AsyncProps', () => {
       } ]
     }
 
-    beforeEach(() => window.__ASYNC_PROPS__ = JSON.stringify([ DATA ]))
+    beforeEach(() => window.__ASYNC_PROPS__ = [ DATA ])
     afterEach(() => delete window.__ASYNC_PROPS__ )
 
     it('renders synchronously with props from hydration', () => {
