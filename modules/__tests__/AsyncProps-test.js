@@ -67,6 +67,43 @@ class Cereal extends React.Component {
   }
 }
 
+class NoLoadProps extends React.Component {
+  render() {
+    return <h1>No loadProps!</h1>
+  }
+}
+
+class AppNoLoadProps extends React.Component {
+  static setAssertions(assertions) {
+    this.assertions = assertions
+  }
+
+  static clearAssertions() {
+    this.assertions = null
+  }
+
+  componentDidMount() {
+    this.assert()
+  }
+
+  componentDidUpdate() {
+    this.assert()
+  }
+
+  assert() {
+    if (this.constructor.assertions)
+      this.constructor.assertions()
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.children || <div>no child</div>}
+      </div>
+    )
+  }
+}
+
 const routes = {
   path: '/',
   component: App,
@@ -224,6 +261,41 @@ describe('AsyncProps', () => {
         />
       ), div, next)
     })
+
+    it('renders correctly when no components have loadProps', (done) => {
+      const history = createHistory('/')
+
+      const noLoadPropsRoutes = {
+        path: '/',
+        component: AppNoLoadProps,
+        childRoutes: [ {
+          path: 'update',
+          component: NoLoadProps
+        } ]
+      }
+
+      const next = execNext([
+        () => {},
+        () => {
+          expect(div.textContent).toContain('no child')
+          history.pushState(null, '/update')
+        },
+        () => {
+          () => expect(div.textContent).toContain('No loadProps!')
+        },
+        done
+      ])
+
+      AppNoLoadProps.setAssertions(next)
+
+      render((
+        <Router
+          history={history}
+          RoutingContext={AsyncProps}
+          routes={noLoadPropsRoutes}
+        />
+      ), div, next)
+    })
   })
 
   describe('server rendering', () => {
@@ -238,6 +310,16 @@ describe('AsyncProps', () => {
 
     beforeEach(() => window.__ASYNC_PROPS__ = [ DATA ])
     afterEach(() => delete window.__ASYNC_PROPS__ )
+
+    it('renders correctly when no components have loadProps', (done) => {
+      const noLoadPropsRoutes = {
+        path: '/',
+        component: AppNoLoadProps
+      }
+      match({ routes: noLoadPropsRoutes, location: '/' }, (err, redirect, renderProps) => {
+        loadPropsOnServer(renderProps, done)
+      })
+    })
 
     it('renders synchronously with props from hydration', () => {
       const html = renderToString(
