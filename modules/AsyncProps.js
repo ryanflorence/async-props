@@ -53,6 +53,7 @@ function loadAsyncProps(components, params, cb) {
       maybeFinish()
     })
   })
+  maybeFinish()
 }
 
 function lookupPropsForComponent(Component, propsAndComponents) {
