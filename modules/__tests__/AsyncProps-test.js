@@ -14,7 +14,10 @@ function execNext(steps) {
   }
 }
 
-const DATA = { cereals: [ 'cinnamon life', 'berry berry kix' ] }
+const DATA = {
+  cereals: [ 'cinnamon life', 'berry berry kix' ],
+  ingredients: [ 'sugar', 'sweetness' ]
+}
 
 class App extends React.Component {
   static loadProps(params, cb) {
@@ -63,7 +66,25 @@ class Cereal extends React.Component {
   }
 
   render() {
-    return <h1>heck yeah! {this.props.cereal}</h1>
+    let {cereal, children} = this.props
+    return (
+      <div>
+        <h1>heck yeah! {cereal}</h1>
+        {children ? React.cloneElement(children, { cereal }) : <div>no grandchild</div>}
+      </div>
+    )
+  }
+}
+
+class Ingredients extends React.Component {
+  static loadProps(params, cb) {
+    setTimeout(() => {
+      cb(null, { ingredients: DATA.ingredients[params.index] })
+    }, 0)
+  }
+
+  render() {
+    return <h1>ingredients for {this.props.cereal}: {this.props.ingredients}</h1>
   }
 }
 
@@ -109,7 +130,11 @@ const routes = {
   component: App,
   childRoutes: [ {
     path: ':index',
-    component: Cereal
+    component: Cereal,
+    childRoutes: [ {
+      path: 'ingredients',
+      component: Ingredients
+    } ]
   } ]
 }
 
@@ -178,6 +203,24 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0')}
+          RoutingContext={AsyncProps}
+          routes={routes}
+        />
+      ), div, next)
+    })
+
+    it('passes extra props through', (done) => {
+      const next = execNext([
+        () => {},
+        () => expect(div.textContent).toContain('ingredients for cinnamon life: sugar'),
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+        <Router
+          history={createHistory('/0/ingredients')}
           RoutingContext={AsyncProps}
           routes={routes}
         />
