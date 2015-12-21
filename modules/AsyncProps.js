@@ -132,7 +132,9 @@ export function loadPropsOnServer({ components, params }, cb) {
 function hydrate(props) {
   if (typeof __ASYNC_PROPS__ !== 'undefined')
     return {
-      propsArray: __ASYNC_PROPS__,
+      propsArray: typeof __ASYNC_PROPS__ === 'string'
+        ? JSON.parse(__ASYNC_PROPS__)
+        : __ASYNC_PROPS__,
       componentsArray: filterAndFlattenComponents(props.components)
     }
   else
