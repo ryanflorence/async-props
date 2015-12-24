@@ -277,6 +277,62 @@ describe('AsyncProps', () => {
       ), div, next)
     })
 
+    it('renders loads props coming up', (done) => {
+      const history = createHistory('/0/ingredients')
+
+      const next = execNext([
+        () => {},
+        () => {
+          expect(div.textContent).toContain('heck yeah! cinnamon life')
+          expect(div.textContent).toContain('ingredients for cinnamon life: sugar')
+          history.pushState(null, '/1')
+        },
+        () => expect(div.textContent).toContain('heck yeah! cinnamon life'),
+        () => {},
+        () => expect(div.textContent).toContain('heck yeah! berry berry kix'),
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+        <Router
+          history={history}
+          RoutingContext={AsyncProps}
+          routes={routes}
+        />
+      ), div, next)
+    })
+
+    it('renders loads props going down', (done) => {
+      const history = createHistory('/0')
+
+      const next = execNext([
+        () => {},
+        () => {
+          expect(div.textContent).toContain('heck yeah! cinnamon life')
+          history.pushState(null, '/1/ingredients')
+        },
+        () => expect(div.textContent).toContain('heck yeah! cinnamon life'),
+        () => {
+          expect(div.textContent).toContain('heck yeah! berry berry kix')
+          expect(div.textContent).toContain('ingredients for berry berry kix: sweetness')
+        },
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+        <Router
+          history={history}
+          RoutingContext={AsyncProps}
+          routes={routes}
+        />
+      ), div, next)
+    })
+
+
     it('does not load props for routes above pivot', (done) => {
       const appSpy = spyOn(App, 'loadProps').andCallThrough()
       const cerealSpy = spyOn(Cereal, 'loadProps').andCallThrough()
