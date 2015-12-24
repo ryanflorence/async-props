@@ -66,7 +66,7 @@ class Cereal extends React.Component {
   }
 
   render() {
-    let {cereal, children} = this.props
+    let { cereal, children } = this.props
     return (
       <div>
         <h1>heck yeah! {cereal}</h1>
