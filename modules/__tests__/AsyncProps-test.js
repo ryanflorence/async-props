@@ -1,6 +1,6 @@
 import React from 'react'
 import expect, { spyOn, restoreSpies } from 'expect'
-import createHistory from 'history/lib/createMemoryHistory'
+import createHistory from 'react-router/lib/createMemoryHistory'
 import { renderToString } from 'react-dom/server'
 import { render, unmountComponentAtNode } from 'react-dom'
 import { Router, match } from 'react-router'
@@ -161,8 +161,8 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
-          RoutingContext={AsyncProps}
           routes={routes}
+          render={(props) => <AsyncProps {...props}/>}
         />
       ), div, next)
     })
@@ -184,7 +184,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -203,7 +203,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0')}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -221,7 +221,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0/ingredients')}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -246,7 +246,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -271,7 +271,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -298,7 +298,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -326,7 +326,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -355,7 +355,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       ), div, next)
@@ -390,7 +390,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={noLoadPropsRoutes}
         />
       ), div, next)
@@ -424,7 +424,7 @@ describe('AsyncProps', () => {
       const html = renderToString(
         <Router
           history={createHistory('/')}
-          RoutingContext={AsyncProps}
+          render={(props) => <AsyncProps {...props}/>}
           routes={routes}
         />
       )

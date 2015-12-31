@@ -1,7 +1,6 @@
 import React from 'react'
 import { render } from 'react-dom'
-import { createHistory } from 'history'
-import { Router, Route, IndexRoute, Link } from 'react-router'
+import { Router, Route, IndexRoute, Link, browserHistory } from 'react-router'
 import AsyncProps from 'async-props'
 import { fetchContacts, fetchContact, deleteContact, postContact } from './api'
 import serializeForm from 'form-serialize'
@@ -142,9 +141,13 @@ function Index() {
 
 render((
   <Router
-    RoutingContext={AsyncProps}
-    history={createHistory()}
-    renderLoading={() => <div>Loading...</div>}
+    history={browserHistory}
+    render={(props) => (
+      <AsyncProps
+        {...props}
+        renderLoading={() => <div>Loading...</div>}
+      />
+    )}
   >
     <Route path="/" component={App}>
       <IndexRoute component={Index}/>
