@@ -23,7 +23,7 @@ function eachComponents(components, iterator) {
 function filterAndFlattenComponents(components) {
   var flattened = []
   eachComponents(components, (Component) => {
-    if (Component.loadProps)
+    if (Component && Component.loadProps)
       flattened.push(Component)
   })
   return flattened
