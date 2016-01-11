@@ -71,9 +71,9 @@ class App extends React.Component {
   }
 }
 
-// 3. Render `Router` with custom RoutingContext
+// 3. Render `Router` with AsyncProps middleware
 render((
-  <Router RoutingContext={AsyncProps}>
+  <Router render={(props) => <AsyncProps {...props}/>}>
     <Route path="/" component={App}/>
   </Router>
 ), el)
