@@ -14,7 +14,7 @@ function eachComponents(components, iterator) {
       for (var key in components[i]) {
         iterator(components[i][key], i, key)
       }
-    } else {
+    } else if (typeof components[i] !== 'undefined') {
       iterator(components[i], i)
     }
   }
