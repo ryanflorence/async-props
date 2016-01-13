@@ -83,8 +83,32 @@ class Ingredients extends React.Component {
     }, 0)
   }
 
+  componentDidMount() {
+    this.context.router.push('/0/ingredients/pancakes')
+  }
+
   render() {
-    return <h1>ingredients for {this.props.cereal}: {this.props.ingredients}</h1>
+    return (
+      <div>
+        <h1>ingredients for {this.props.cereal}: {this.props.ingredients}</h1>
+        {this.props.children}
+      </div>
+    )
+  }
+}
+Ingredients.contextTypes = {
+  router: React.PropTypes.object.isRequired
+}
+
+class Pancakes extends React.Component {
+  static loadProps(params, cb) {
+    setTimeout(() => {
+      cb(null, { ingredients: DATA.ingredients[params.index] })
+    }, 0)
+  }
+
+  render() {
+    return <h1>ingredients for pancakes: {this.props.ingredients}</h1>
   }
 }
 
@@ -133,7 +157,11 @@ const routes = {
     component: Cereal,
     childRoutes: [ {
       path: 'ingredients',
-      component: Ingredients
+      component: Ingredients,
+      childRoutes: [ {
+        path: 'pancakes',
+        component: Pancakes
+      } ]
     } ]
   } ]
 }
@@ -213,6 +241,24 @@ describe('AsyncProps', () => {
       const next = execNext([
         () => {},
         () => expect(div.textContent).toContain('ingredients for cinnamon life: sugar'),
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+        <Router
+          history={createHistory('/0/ingredients')}
+          render={(props) => <AsyncProps {...props}/>}
+          routes={routes}
+        />
+      ), div, next)
+    })
+
+    it('renders nested child route component', (done) => {
+      const next = execNext([
+        () => {},
+        () => console.log(div.textContent),
         done
       ])
 
@@ -443,4 +489,3 @@ describe('AsyncProps', () => {
     })
   })
 })
-
