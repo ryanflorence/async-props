@@ -1,6 +1,6 @@
 {
   "name": "@kimmel/async-props",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Co-located component data fetching for React Router",
   "main": "lib/AsyncProps",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "bugs": "https://github.com/rackt/async-props/issues",
   "scripts": {
-    "build": "./node_modules/babel/bin/babel.js ./modules --stage 0 --loose all -d lib --ignore '__tests__'",
+    "build": "babel ./modules --stage 0 --loose all -d lib --ignore '__tests__'",
     "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
     "build-min": "NODE_ENV=production webpack -p modules/AsyncProps.js umd/AsyncProps.min.js",
     "lint": "eslint modules",
