@@ -259,7 +259,7 @@ class AsyncProps extends React.Component {
     }
 
     if (components.length > 0)
-      this.loadAsyncProps(components, nextProps.params, nextProps.location)
+      this.loadAsyncProps(components, nextProps.params, nextProps.location, { force: true })
   }
 
   handleError(cb) {
