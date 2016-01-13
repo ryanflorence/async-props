@@ -290,7 +290,7 @@ class AsyncProps extends React.Component {
         // somebody calls reloadAsyncProps, changes location, then changes
         // location again before its done and state gets out of whack (Rx folks
         // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
-        if ((force || !sameLocation) && !this._unmounted) {
+        if (!this._unmounted) {
           if (this.state.propsAndComponents) {
             propsAndComponents = mergePropsAndComponents(
               this.state.propsAndComponents,
