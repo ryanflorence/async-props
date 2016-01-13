@@ -275,7 +275,7 @@ class AsyncProps extends React.Component {
     this._unmounted = true
   }
 
-  loadAsyncProps(components, params, location, options) {
+  loadAsyncProps(components, params) {
     this.setState({
       loading: true,
       prevProps: this.props
@@ -284,8 +284,6 @@ class AsyncProps extends React.Component {
       filterAndFlattenComponents(components),
       params,
       this.handleError((err, propsAndComponents) => {
-        const force = options && options.force
-        const sameLocation = this.props.location === location
         // FIXME: next line has potential (rare) race conditions I think. If
         // somebody calls reloadAsyncProps, changes location, then changes
         // location again before its done and state gets out of whack (Rx folks
