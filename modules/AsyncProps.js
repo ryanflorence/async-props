@@ -29,11 +29,17 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps(components, params, cb) {
+function defaultResolver(Component, params, cb) {
+  Component.loadProps(params, cb)
+}
+
+function loadAsyncProps(components, params, cb, resolver) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
+
+  resolver = resolver || defaultResolver
 
   const maybeFinish = () => {
     if (needToLoadCounter === 0)
@@ -46,7 +52,7 @@ function loadAsyncProps(components, params, cb) {
   }
 
   components.forEach((Component, index) => {
-    Component.loadProps(params, (error, props) => {
+    resolver(Component, params, (error, props) => {
       needToLoadCounter--
       propsArray[index] = props
       componentsArray[index] = Component
@@ -112,7 +118,7 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, cb) {
+export function loadPropsOnServer({ components, params }, cb, resolver) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
     params,
@@ -125,7 +131,8 @@ export function loadPropsOnServer({ components, params }, cb) {
         const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
         cb(null, propsAndComponents, scriptString)
       }
-    }
+    },
+    resolver
   )
 }
 
@@ -189,6 +196,7 @@ class AsyncProps extends React.Component {
     location: object.isRequired,
     onError: func.isRequired,
     renderLoading: func.isRequired,
+    resolver: func,
 
     // server rendering
     propsArray: array,
@@ -303,7 +311,8 @@ class AsyncProps extends React.Component {
             prevProps: null
           })
         }
-      })
+      }),
+      this.props.resolver
     )
   }
 
