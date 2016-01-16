@@ -29,7 +29,7 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps(components, params, cb) {
+function loadAsyncProps(components, route, cb) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
@@ -46,7 +46,7 @@ function loadAsyncProps(components, params, cb) {
   }
 
   components.forEach((Component, index) => {
-    Component.loadProps(params, (error, props) => {
+    Component.loadProps(route, (error, props) => {
       needToLoadCounter--
       propsArray[index] = props
       componentsArray[index] = Component
@@ -112,10 +112,10 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, cb) {
+export function loadPropsOnServer({ components, params, location }, cb) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
-    params,
+    { params, location },
     (err, propsAndComponents) => {
       if (err) {
         cb(err)
