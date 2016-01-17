@@ -4,10 +4,6 @@ import RouterContext from 'react-router/lib/RouterContext'
 
 const { array, func, object } = React.PropTypes
 
-function last(arr) {
-  return arr[arr.length - 1]
-}
-
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
     if (typeof components[i] === 'object') {
@@ -158,14 +154,6 @@ class AsyncPropsContainer extends React.Component {
     asyncProps: object.isRequired
   }
 
-  componentWillReceiveProps(nextProps) {
-    const paramsChanged = !shallowEqual(nextProps.routerProps.routeParams,
-                                        this.props.routerProps.routeParams)
-    if (paramsChanged) {
-      this.context.asyncProps.reloadComponent(nextProps.Component)
-    }
-  }
-
   render() {
     const { Component, routerProps, ...props } = this.props
     const { propsAndComponents, loading, reloadComponent } = this.context.asyncProps
@@ -255,15 +243,12 @@ class AsyncProps extends React.Component {
 
     const oldComponents = filterAndFlattenComponents(this.props.components)
     const newComponents = filterAndFlattenComponents(nextProps.components)
-    let components = arrayDiff(oldComponents, newComponents)
-
-    if (components.length === 0) {
-      const sameComponents = shallowEqual(oldComponents, newComponents)
-      if (sameComponents) {
-        const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
-        if (paramsChanged)
-          components = [ last(newComponents) ]
-      }
+    let components = []
+    const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
+    if (paramsChanged) {
+      components = newComponents
+    } else {
+      components = arrayDiff(oldComponents, newComponents)
     }
 
     if (components.length > 0)
