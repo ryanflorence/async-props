@@ -36,8 +36,8 @@ You can find the library on `window.AsyncProps`.
 
 ## Notes
 
-This is pre-release, but I think the code works as intended, just need
-to brush up the repository and add a few more tests.
+This is pre-release, it's pretty close though. If you are using it then you are
+a contributor. Please add tests with all pull requests.
 
 ## Usage
 
