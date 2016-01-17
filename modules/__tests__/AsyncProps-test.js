@@ -1,6 +1,6 @@
 import React from 'react'
-import expect, { restoreSpies } from 'expect'
-import createHistory from 'react-router/lib/createMemoryHistory'
+import expect, { spyOn, restoreSpies } from 'expect'
+import createHistory from 'history/lib/createMemoryHistory'
 import { renderToString } from 'react-dom/server'
 import { render, unmountComponentAtNode } from 'react-dom'
 import { Router, match } from 'react-router'
@@ -161,8 +161,8 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
+          RoutingContext={AsyncProps}
           routes={routes}
-          render={(props) => <AsyncProps {...props}/>}
         />
       ), div, next)
     })
@@ -184,7 +184,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -203,7 +203,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -221,7 +221,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0/ingredients')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -246,7 +246,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -271,7 +271,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -297,7 +297,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -325,7 +325,36 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
+          routes={routes}
+        />
+      ), div, next)
+    })
+
+
+    it('does not load props for routes above pivot', (done) => {
+      const appSpy = spyOn(App, 'loadProps').andCallThrough()
+      const cerealSpy = spyOn(Cereal, 'loadProps').andCallThrough()
+      const history = createHistory('/0')
+
+      const next = execNext([
+        () => {},
+        () => {
+          history.pushState(null, '/1')
+        },
+        () => {
+          expect(appSpy.calls.length).toEqual(1)
+          expect(cerealSpy.calls.length).toEqual(2)
+        },
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+        <Router
+          history={history}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -360,7 +389,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={noLoadPropsRoutes}
         />
       ), div, next)
@@ -439,7 +468,7 @@ describe('AsyncProps', () => {
       const html = renderToString(
         <Router
           history={createHistory('/')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       )
@@ -458,4 +487,3 @@ describe('AsyncProps', () => {
     })
   })
 })
-

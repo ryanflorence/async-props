@@ -1,6 +1,6 @@
 /*global __ASYNC_PROPS__*/
 import React from 'react'
-import RouterContext from 'react-router/lib/RouterContext'
+import RoutingContext from 'react-router/lib/RoutingContext'
 
 const { array, func, object } = React.PropTypes
 
@@ -195,13 +195,8 @@ class AsyncProps extends React.Component {
     onError(err) {
       throw err
     },
-
     renderLoading() {
       return null
-    },
-
-    render(props) {
-      return <RouterContext {...props} createElement={createElement}/>
     }
   }
 
@@ -313,7 +308,7 @@ class AsyncProps extends React.Component {
     }
     else {
       const props = this.state.loading ? this.state.prevProps : this.props
-      return this.props.render(props)
+      return <RoutingContext {...props} createElement={createElement} />
     }
   }
 
