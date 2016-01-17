@@ -1,6 +1,6 @@
 import React from 'react'
 import expect, { spyOn, restoreSpies } from 'expect'
-import createHistory from 'react-router/lib/createMemoryHistory'
+import createHistory from 'history/lib/createMemoryHistory'
 import { renderToString } from 'react-dom/server'
 import { render, unmountComponentAtNode } from 'react-dom'
 import { Router, match } from 'react-router'
@@ -161,8 +161,8 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
+          RoutingContext={AsyncProps}
           routes={routes}
-          render={(props) => <AsyncProps {...props}/>}
         />
       ), div, next)
     })
@@ -184,7 +184,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -203,7 +203,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -221,7 +221,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={createHistory('/0/ingredients')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -246,7 +246,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -271,7 +271,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -288,7 +288,6 @@ describe('AsyncProps', () => {
           history.pushState(null, '/1')
         },
         () => expect(div.textContent).toContain('heck yeah! cinnamon life'),
-        () => {},
         () => expect(div.textContent).toContain('heck yeah! berry berry kix'),
         done
       ])
@@ -298,7 +297,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -326,7 +325,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -355,7 +354,7 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       ), div, next)
@@ -390,9 +389,36 @@ describe('AsyncProps', () => {
       render((
         <Router
           history={history}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={noLoadPropsRoutes}
         />
+      ), div, next)
+    })
+
+    it('allows to override resolver function', (done) => {
+      const appSpy = spyOn(App, 'loadProps').andCallThrough()
+
+      const next = execNext([
+        () => {},
+        () => {
+          expect(appSpy.calls.length).toEqual(1)
+          expect(appSpy.calls[0].arguments[2]).toEqual('check')
+        },
+        done
+      ])
+
+      function resolver(Component, params, cb) {
+        Component.loadProps(params, cb, 'check')
+      }
+
+      App.setAssertions(next)
+
+      render((
+          <Router
+              history={createHistory('/')}
+              routes={routes}
+              render={(props) => <AsyncProps {...props} resolver={resolver} />}
+          />
       ), div, next)
     })
   })
@@ -420,11 +446,29 @@ describe('AsyncProps', () => {
       })
     })
 
+    it('allows to override resolver function', (done) => {
+      const appSpy = spyOn(App, 'loadProps').andCallThrough()
+      function resolver(Component, params, cb) {
+        Component.loadProps(params, cb, 'check')
+      }
+      const loadPropsRoutes = {
+        path: '/',
+        component: App
+      }
+      match({ routes: loadPropsRoutes, location: '/' }, (err, redirect, renderProps) => {
+        loadPropsOnServer(renderProps, () => {
+          expect(appSpy.calls.length).toEqual(1)
+          expect(appSpy.calls[0].arguments[2]).toEqual('check1')
+          done()
+        }, resolver)
+      })
+    })
+
     it('renders synchronously with props from hydration', () => {
       const html = renderToString(
         <Router
           history={createHistory('/')}
-          render={(props) => <AsyncProps {...props}/>}
+          RoutingContext={AsyncProps}
           routes={routes}
         />
       )
@@ -443,4 +487,3 @@ describe('AsyncProps', () => {
     })
   })
 })
-

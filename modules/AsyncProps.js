@@ -1,12 +1,8 @@
 /*global __ASYNC_PROPS__*/
 import React from 'react'
-import RouterContext from 'react-router/lib/RouterContext'
+import RoutingContext from 'react-router/lib/RoutingContext'
 
 const { array, func, object } = React.PropTypes
-
-function last(arr) {
-  return arr[arr.length - 1]
-}
 
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
@@ -14,7 +10,7 @@ function eachComponents(components, iterator) {
       for (var key in components[i]) {
         iterator(components[i][key], i, key)
       }
-    } else {
+    } else if (typeof components[i] !== 'undefined') {
       iterator(components[i], i)
     }
   }
@@ -29,11 +25,17 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps(components, params, cb) {
+function defaultResolver(Component, params, cb) {
+  Component.loadProps(params, cb)
+}
+
+function loadAsyncProps(components, params, cb, resolver) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
+
+  resolver = resolver || defaultResolver
 
   const maybeFinish = () => {
     if (needToLoadCounter === 0)
@@ -46,7 +48,7 @@ function loadAsyncProps(components, params, cb) {
   }
 
   components.forEach((Component, index) => {
-    Component.loadProps(params, (error, props) => {
+    resolver(Component, params, (error, props) => {
       needToLoadCounter--
       propsArray[index] = props
       componentsArray[index] = Component
@@ -112,7 +114,7 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, cb) {
+export function loadPropsOnServer({ components, params }, cb, resolver) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
     params,
@@ -125,7 +127,8 @@ export function loadPropsOnServer({ components, params }, cb) {
         const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
         cb(null, propsAndComponents, scriptString)
       }
-    }
+    },
+    resolver
   )
 }
 
@@ -149,14 +152,6 @@ class AsyncPropsContainer extends React.Component {
 
   static contextTypes = {
     asyncProps: object.isRequired
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const paramsChanged = !shallowEqual(nextProps.routerProps.routeParams,
-                                        this.props.routerProps.routeParams)
-    if (paramsChanged) {
-      this.context.asyncProps.reloadComponent(nextProps.Component)
-    }
   }
 
   render() {
@@ -189,6 +184,7 @@ class AsyncProps extends React.Component {
     location: object.isRequired,
     onError: func.isRequired,
     renderLoading: func.isRequired,
+    resolver: func,
 
     // server rendering
     propsArray: array,
@@ -199,13 +195,8 @@ class AsyncProps extends React.Component {
     onError(err) {
       throw err
     },
-
     renderLoading() {
       return null
-    },
-
-    render(props) {
-      return <RouterContext {...props} createElement={createElement}/>
     }
   }
 
@@ -247,19 +238,16 @@ class AsyncProps extends React.Component {
 
     const oldComponents = filterAndFlattenComponents(this.props.components)
     const newComponents = filterAndFlattenComponents(nextProps.components)
-    let components = arrayDiff(oldComponents, newComponents)
-
-    if (components.length === 0) {
-      const sameComponents = shallowEqual(oldComponents, newComponents)
-      if (sameComponents) {
-        const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
-        if (paramsChanged)
-          components = [ last(newComponents) ]
-      }
+    let components = []
+    const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
+    if (paramsChanged) {
+      components = newComponents
+    } else {
+      components = arrayDiff(oldComponents, newComponents)
     }
 
     if (components.length > 0)
-      this.loadAsyncProps(components, nextProps.params, nextProps.location)
+      this.loadAsyncProps(components, nextProps.params, nextProps.location, { force: true })
   }
 
   handleError(cb) {
@@ -303,7 +291,8 @@ class AsyncProps extends React.Component {
             prevProps: null
           })
         }
-      })
+      }),
+      this.props.resolver
     )
   }
 
@@ -319,7 +308,7 @@ class AsyncProps extends React.Component {
     }
     else {
       const props = this.state.loading ? this.state.prevProps : this.props
-      return this.props.render(props)
+      return <RoutingContext {...props} createElement={createElement} />
     }
   }
 
