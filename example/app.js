@@ -11,7 +11,7 @@ class App extends React.Component {
     fetchContacts((err, contacts) => {
       cb(null, { contacts })
     })
-  }
+  };
 
   // Feel free to have your own opinion here: AsyncProps sends a prop
   // `reloadAsyncProps` to allow your app to reload props for a component
@@ -22,13 +22,13 @@ class App extends React.Component {
   // etc.
   static childContextTypes = {
     reloadContacts: React.PropTypes.func
-  }
+  };
 
   getChildContext() {
     return {
       reloadContacts: () => this.props.reloadAsyncProps()
     }
-  }
+  };
 
   render() {
     // props.loading comes from AsyncProps
@@ -52,7 +52,7 @@ class App extends React.Component {
         {this.props.children}
       </div>
     )
-  }
+  };
 
 }
 
@@ -62,11 +62,11 @@ class Contact extends React.Component {
     fetchContact(params.contactId, (err, contact) => {
       cb(null, { contact })
     })
-  }
+  };
 
   static contextTypes = {
     reloadContacts: React.PropTypes.func.isRequired
-  }
+  };
 
   delete() {
     deleteContact(this.props.contact.id, (err) => {
@@ -78,7 +78,7 @@ class Contact extends React.Component {
         this.props.history.pushState(null, '/')
       }
     })
-  }
+  };
 
   render() {
     const { contact } = this.props
@@ -89,14 +89,14 @@ class Contact extends React.Component {
         <button onClick={() => this.delete()}>Delete</button>
       </div>
     )
-  }
+  };
 }
 
 class New extends React.Component {
 
   static contextTypes = {
     reloadContacts: React.PropTypes.func.isRequired
-  }
+  };
 
   submit(e) {
     e.preventDefault()
@@ -105,7 +105,7 @@ class New extends React.Component {
       this.context.reloadContacts()
       this.props.history.pushState(null, `/${savedContact.id}`)
     })
-  }
+  };
 
   render() {
     return (
@@ -121,7 +121,7 @@ class New extends React.Component {
         </p>
       </form>
     )
-  }
+  };
 
 }
 
@@ -156,4 +156,3 @@ render((
     </Route>
   </Router>
 ), document.getElementById('app'))
-

@@ -145,11 +145,11 @@ class AsyncPropsContainer extends React.Component {
   static propTypes = {
     Component: func.isRequired,
     routerProps: object.isRequired
-  }
+  };
 
   static contextTypes = {
     asyncProps: object.isRequired
-  }
+  };
 
   componentWillReceiveProps(nextProps) {
     const paramsChanged = !shallowEqual(nextProps.routerProps.routeParams,
@@ -157,7 +157,7 @@ class AsyncPropsContainer extends React.Component {
     if (paramsChanged) {
       this.context.asyncProps.reloadComponent(nextProps.Component)
     }
-  }
+  };
 
   render() {
     const { Component, routerProps, ...props } = this.props
@@ -173,7 +173,7 @@ class AsyncPropsContainer extends React.Component {
         loading={loading}
       />
     )
-  }
+  };
 
 }
 
@@ -181,7 +181,7 @@ class AsyncProps extends React.Component {
 
   static childContextTypes = {
     asyncProps: object
-  }
+  };
 
   static propTypes = {
     components: array.isRequired,
@@ -193,7 +193,7 @@ class AsyncProps extends React.Component {
     // server rendering
     propsArray: array,
     componentsArray: array
-  }
+  };
 
   static defaultProps = {
     onError(err) {
@@ -207,7 +207,7 @@ class AsyncProps extends React.Component {
     render(props) {
       return <RouterContext {...props} createElement={createElement}/>
     }
-  }
+  };
 
   constructor(props, context) {
     super(props, context)
@@ -220,7 +220,7 @@ class AsyncProps extends React.Component {
         { propsArray, componentsArray } :
         hydrate(props)
     }
-  }
+  };
 
   getChildContext() {
     const { loading, propsAndComponents } = this.state
@@ -233,12 +233,12 @@ class AsyncProps extends React.Component {
         }
       }
     }
-  }
+  };
 
   componentDidMount() {
     const { components, params, location } = this.props
     this.loadAsyncProps(components, params, location)
-  }
+  };
 
   componentWillReceiveProps(nextProps) {
     const routeChanged = nextProps.location !== this.props.location
@@ -260,7 +260,7 @@ class AsyncProps extends React.Component {
 
     if (components.length > 0)
       this.loadAsyncProps(components, nextProps.params, nextProps.location)
-  }
+  };
 
   handleError(cb) {
     return (err, ...args) => {
@@ -269,11 +269,11 @@ class AsyncProps extends React.Component {
       else
         cb(null, ...args)
     }
-  }
+  };
 
   componentWillUnmount() {
     this._unmounted = true
-  }
+  };
 
   loadAsyncProps(components, params, location, options) {
     this.setState({
@@ -305,12 +305,12 @@ class AsyncProps extends React.Component {
         }
       })
     )
-  }
+  };
 
   reloadComponent(Component) {
     const { params } = this.props
     this.loadAsyncProps([ Component ], params, null, { force: true })
-  }
+  };
 
   render() {
     const { propsAndComponents } = this.state
@@ -321,7 +321,7 @@ class AsyncProps extends React.Component {
       const props = this.state.loading ? this.state.prevProps : this.props
       return this.props.render(props)
     }
-  }
+  };
 
 }
 
