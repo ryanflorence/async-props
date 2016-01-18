@@ -83,25 +83,35 @@ render((
 
 ```js
 import { renderToString } from 'react-dom/server'
-import { match, RoutingContext } from 'react-router'
+import { match } from 'react-router'
 import AsyncProps, { loadPropsOnServer } from 'async-props'
 
 app.get('*', (req, res) => {
-  match({ routes, location: req.url }, (err, redirect, renderProps) => {
+  match({ routes, location: req.url }, (err, redirectLocation, renderProps) => {
+    if (error) {
+      res.status(500).send(error.message);
+    }
+    else if (redirectLocation) {
+      res.redirect(302, redirectLocation.pathname + redirectLocation.search)
+    }
+    else if (renderProps) {
+      // 1. load the props
+      loadPropsOnServer(renderProps, (err, asyncProps, scriptTag) => {
 
-    // 1. load the props
-    loadPropsOnServer(renderProps, (err, asyncProps, scriptTag) => {
+        // 2. use `AsyncProps` instead of `RoutingContext` and pass it
+        //    `renderProps` and `asyncProps`
+        const appHTML = renderToString(
+          <AsyncProps {...renderProps} {...asyncProps} />
+        )
 
-      // 2. use `AsyncProps` instead of `RoutingContext` and pass it
-      //    `renderProps` and `asyncProps`
-      const appHTML = renderToString(
-        <AsyncProps {...renderProps} {...asyncProps} />
-      )
-
-      // 3. render the script tag into the server markup
-      const html = createPage(appHTML, scriptTag)
-      res.send(html)
-    })
+        // 3. render the script tag into the server markup
+        const html = createPage(appHTML, scriptTag)
+        res.send(html)
+      })
+    }
+    else {
+      res.status(404).send('Not found')
+    }
   })
 })
 
@@ -125,4 +135,3 @@ function createPage(html, scriptTag) {
 
 Please refer to the example, as it exercises the entire API. Docs will
 come eventually :)
-
