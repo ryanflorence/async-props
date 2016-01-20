@@ -457,11 +457,11 @@ describe('AsyncProps', () => {
         component: App
       }
       match({ routes: loadPropsRoutes, location: '/' }, (err, redirect, renderProps) => {
-        loadPropsOnServer(renderProps, () => {
+        loadPropsOnServer({ ...renderProps, resolver }, () => {
           expect(appSpy.calls.length).toEqual(1)
-          expect(appSpy.calls[0].arguments[2]).toEqual('check1')
+          expect(appSpy.calls[0].arguments[2]).toEqual('check')
           done()
-        }, resolver)
+        })
       })
     })
 

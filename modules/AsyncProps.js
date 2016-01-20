@@ -8,6 +8,14 @@ function last(arr) {
   return arr[arr.length - 1]
 }
 
+/**
+ * We need to iterate over all components for specified routes.
+ * Components array can include objects if named components are used:
+ * https://github.com/rackt/react-router/blob/latest/docs/API.md#named-components
+ *
+ * @param components
+ * @param iterator
+ */
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
     if (typeof components[i] === 'object') {
@@ -33,13 +41,11 @@ function defaultResolver(Component, params, cb) {
   Component.loadProps(params, cb)
 }
 
-function loadAsyncProps(components, params, cb, resolver) {
+function loadAsyncProps(components, params, cb, resolver = defaultResolver) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
-
-  resolver = resolver || defaultResolver
 
   const maybeFinish = () => {
     if (needToLoadCounter === 0)
@@ -118,7 +124,7 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, cb, resolver) {
+export function loadPropsOnServer({ components, params, resolver }, cb) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
     params,
