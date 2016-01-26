@@ -4,6 +4,14 @@ import RouterContext from 'react-router/lib/RouterContext'
 
 const { array, func, object } = React.PropTypes
 
+import { Observable } from 'rxjs/Observable'
+import { Subscription } from 'rxjs/Subscription'
+
+import 'rxjs/add/operator/map'
+import 'rxjs/add/observable/forkJoin'
+import 'rxjs/add/operator/defaultIfEmpty'
+import 'rxjs/add/observable/bindNodeCallback'
+
 function last(arr) {
   return arr[arr.length - 1]
 }
@@ -30,29 +38,30 @@ function filterAndFlattenComponents(components) {
 }
 
 function loadAsyncProps(components, params, cb) {
-  // flatten the multi-component routes
-  let componentsArray = []
-  let propsArray = []
-  let needToLoadCounter = components.length
 
-  const maybeFinish = () => {
-    if (needToLoadCounter === 0)
-      cb(null, { propsArray, componentsArray })
-  }
-
-  // If there is no components we should resolve directly
-  if (needToLoadCounter === 0) {
-    return maybeFinish()
-  }
-
-  components.forEach((Component, index) => {
-    Component.loadProps(params, (error, props) => {
-      needToLoadCounter--
-      propsArray[index] = props
-      componentsArray[index] = Component
-      maybeFinish()
-    })
+  const componentPropsObs = components.map((Component) => {
+    return Observable
+      .bindNodeCallback(Component.loadProps)(params)
+      .map((props) => ({ props, Component }))
   })
+
+  return Observable
+    .forkJoin(...componentPropsObs)
+    .map((results) => {
+      return results.reduce((memo, { props, Component }) => {
+          memo.propsArray.push(props)
+          memo.componentsArray.push(Component)
+          return memo
+        }, {
+          propsArray: [],
+          componentsArray: []
+        })
+    })
+    .defaultIfEmpty({ propsArray: [], componentsArray: [] })
+    .subscribe(
+      (x) => cb(null, x),
+      (e) => cb(e, null)
+    )
 }
 
 function lookupPropsForComponent(Component, propsAndComponents) {
@@ -170,8 +179,7 @@ class AsyncPropsContainer extends React.Component {
         {...routerProps}
         {...asyncProps}
         reloadAsyncProps={reload}
-        loading={loading}
-      />
+        loading={loading}/>
     )
   }
 
@@ -216,6 +224,7 @@ class AsyncProps extends React.Component {
     this.state = {
       loading: false,
       prevProps: null,
+      subscription: new Subscription(),
       propsAndComponents: isServerRender ?
         { propsArray, componentsArray } :
         hydrate(props)
@@ -273,38 +282,36 @@ class AsyncProps extends React.Component {
 
   componentWillUnmount() {
     this._unmounted = true
+    this.state.subscription.unsubscribe()
   }
 
   loadAsyncProps(components, params, location, options) {
+    this.state.subscription.unsubscribe()
     this.setState({
       loading: true,
-      prevProps: this.props
-    })
-    loadAsyncProps(
-      filterAndFlattenComponents(components),
-      params,
-      this.handleError((err, propsAndComponents) => {
-        const force = options && options.force
-        const sameLocation = this.props.location === location
-        // FIXME: next line has potential (rare) race conditions I think. If
-        // somebody calls reloadAsyncProps, changes location, then changes
-        // location again before its done and state gets out of whack (Rx folks
-        // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
-        if ((force || sameLocation) && !this._unmounted) {
-          if (this.state.propsAndComponents) {
-            propsAndComponents = mergePropsAndComponents(
-              this.state.propsAndComponents,
-              propsAndComponents
-            )
+      prevProps: this.props,
+      subscription: loadAsyncProps(
+        filterAndFlattenComponents(components),
+        params,
+        this.handleError((err, propsAndComponents) => {
+          const force = options && options.force
+          const sameLocation = this.props.location === location
+          if ((force || sameLocation) && !this._unmounted) {
+            if (this.state.propsAndComponents) {
+              propsAndComponents = mergePropsAndComponents(
+                this.state.propsAndComponents,
+                propsAndComponents
+              )
+            }
+            this.setState({
+              loading: false,
+              propsAndComponents,
+              prevProps: null
+            })
           }
-          this.setState({
-            loading: false,
-            propsAndComponents,
-            prevProps: null
-          })
-        }
-      })
-    )
+        })
+      )
+    })
   }
 
   reloadComponent(Component) {
