@@ -145,11 +145,11 @@ class AsyncPropsContainer extends React.Component {
   static propTypes = {
     Component: func.isRequired,
     routerProps: object.isRequired
-  }
+  };
 
   static contextTypes = {
     asyncProps: object.isRequired
-  }
+  };
 
   componentWillReceiveProps(nextProps) {
     const paramsChanged = !shallowEqual(nextProps.routerProps.routeParams,
@@ -181,7 +181,7 @@ class AsyncProps extends React.Component {
 
   static childContextTypes = {
     asyncProps: object
-  }
+  };
 
   static propTypes = {
     components: array.isRequired,
@@ -193,7 +193,7 @@ class AsyncProps extends React.Component {
     // server rendering
     propsArray: array,
     componentsArray: array
-  }
+  };
 
   static defaultProps = {
     onError(err) {
@@ -207,7 +207,7 @@ class AsyncProps extends React.Component {
     render(props) {
       return <RouterContext {...props} createElement={createElement}/>
     }
-  }
+  };
 
   constructor(props, context) {
     super(props, context)
