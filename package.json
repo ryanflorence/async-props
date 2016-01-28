@@ -9,7 +9,7 @@
   },
   "bugs": "https://github.com/rackt/async-props/issues",
   "scripts": {
-    "build": "babel ./modules --presets react --presets stage-0 --loose all -d lib --ignore '__tests__'",
+    "build": "babel ./modules --presets react,stage-0 --loose all -d lib --ignore '__tests__'",
     "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
     "build-min": "NODE_ENV=production webpack -p modules/AsyncProps.js umd/AsyncProps.min.js",
     "lint": "eslint modules",
