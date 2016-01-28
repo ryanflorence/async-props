@@ -6,6 +6,7 @@ function exec(command) {
 }
 
 stat('lib', function (error, stat) {
-  if (error || !stat.isDirectory())
-    exec('npm run build')
+  if (error || !stat.isDirectory()) {
+    exec('npm run build');
+  }
 })

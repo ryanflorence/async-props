@@ -9,7 +9,7 @@
   },
   "bugs": "https://github.com/rackt/async-props/issues",
   "scripts": {
-    "build": "babel ./modules --stage 0 --loose all -d lib --ignore '__tests__'",
+    "build": "babel ./modules --presets react,es2015,stage-0 --loose all -d lib --ignore '__tests__'",
     "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
     "build-min": "NODE_ENV=production webpack -p modules/AsyncProps.js umd/AsyncProps.min.js",
     "lint": "eslint modules",
@@ -26,8 +26,9 @@
     "react-router": "2.0.0-rc4"
   },
   "devDependencies": {
-    "babel": "^5.8.34",
-    "babel-core": "^5.8.34",
+    "babel": "6.x.x",
+    "babel-core": "6.x.x",
+    "babel-cli": "6.x.x",
     "babel-eslint": "^3.1.23",
     "babel-loader": "^5.4.0",
     "eslint": "1.4.1",
