@@ -1,12 +1,9 @@
 /*global __ASYNC_PROPS__*/
 import React from 'react'
 import RouterContext from 'react-router/lib/RouterContext'
+import { getParamNames } from 'react-router/lib/PatternUtils'
 
 const { array, func, object } = React.PropTypes
-
-function last(arr) {
-  return arr[arr.length - 1]
-}
 
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
@@ -77,34 +74,6 @@ function mergePropsAndComponents(current, changes) {
   return current
 }
 
-function arrayDiff(previous, next) {
-  var diff = []
-
-  for (var i = 0, l = next.length; i < l; i++)
-    if (previous.indexOf(next[i]) === -1)
-      diff.push(next[i])
-
-  return diff
-}
-
-function shallowEqual(a, b) {
-  var key
-  var ka = 0
-  var kb = 0
-
-  for (key in a) {
-    if (a.hasOwnProperty(key) && a[key] !== b[key])
-      return false
-    ka++
-  }
-
-  for (key in b)
-    if (b.hasOwnProperty(key))
-      kb++
-
-  return ka === kb
-}
-
 function createElement(Component, props) {
   if (Component.loadProps)
     return <AsyncPropsContainer Component={Component} routerProps={props}/>
@@ -149,14 +118,6 @@ class AsyncPropsContainer extends React.Component {
 
   static contextTypes = {
     asyncProps: object.isRequired
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const paramsChanged = !shallowEqual(nextProps.routerProps.routeParams,
-                                        this.props.routerProps.routeParams)
-    if (paramsChanged) {
-      this.context.asyncProps.reloadComponent(nextProps.Component)
-    }
   }
 
   render() {
@@ -245,16 +206,18 @@ class AsyncProps extends React.Component {
     if (!routeChanged)
       return
 
-    const oldComponents = filterAndFlattenComponents(this.props.components)
-    const newComponents = filterAndFlattenComponents(nextProps.components)
-    let components = arrayDiff(oldComponents, newComponents)
-
-    if (components.length === 0) {
-      const sameComponents = shallowEqual(oldComponents, newComponents)
-      if (sameComponents) {
-        const paramsChanged = !shallowEqual(nextProps.params, this.props.params)
-        if (paramsChanged)
-          components = [ last(newComponents) ]
+    let components = []
+    let pivoted = false
+    for (let i = 0; i < nextProps.routes.length; i++) {
+      const path = nextProps.routes[i].path
+      if (path) {
+        const params = getParamNames(path)
+        pivoted = pivoted || params.some(name => this.props.params[name] !== nextProps.params[name])
+      }
+      if (pivoted) {
+        const Component = nextProps.components[i]
+        if (Component.loadProps)
+          components.push(Component)
       }
     }
 
