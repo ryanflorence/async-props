@@ -209,16 +209,21 @@ class AsyncProps extends React.Component {
     let components = []
     let pivoted = false
     for (let i = 0; i < nextProps.routes.length; i++) {
-      const path = nextProps.routes[i].path
-      if (path) {
-        const params = getParamNames(path)
-        pivoted = pivoted || params.some(name => this.props.params[name] !== nextProps.params[name])
+      const component = nextProps.components[i]
+      if (!pivoted) {
+        const oldComponent = this.props.components[i]
+        if (component !== oldComponent) {
+          pivoted = true
+        } else {
+          const path = nextProps.routes[i].path
+          if (!path)
+            continue
+          const params = getParamNames(path)
+          pivoted = params.some(name => this.props.params[name] !== nextProps.params[name])
+        }
       }
-      if (pivoted) {
-        const Component = nextProps.components[i]
-        if (Component.loadProps)
-          components.push(Component)
-      }
+      if (pivoted && component.loadProps)
+        components.push(component)
     }
 
     if (components.length > 0)
