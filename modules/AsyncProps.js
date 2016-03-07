@@ -234,8 +234,11 @@ class AsyncProps extends React.Component {
   }
 
   componentDidMount() {
-    const { components, params, location } = this.props
-    this.loadAsyncProps(components, params, location)
+    const wasHydrated = this.state.propsAndComponents !== null
+    if (!wasHydrated) {
+      const { components, params, location } = this.props
+      this.loadAsyncProps(components, params, location)
+    }
   }
 
   componentWillReceiveProps(nextProps) {
