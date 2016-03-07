@@ -1,51 +1,52 @@
-localStorage.token = localStorage.token || (Date.now()*Math.random());
+localStorage.token = localStorage.token || (Date.now()*Math.random())
 
-const API = 'http://addressbook-api.herokuapp.com'
+//const API = 'http://addressbook-api.herokuapp.com'
+const API = 'http://localhost:3000'
 
 function setToken(req) {
-  req.setRequestHeader('authorization', localStorage.token);
+  req.setRequestHeader('authorization', localStorage.token)
 }
 
 function getJSON(url, cb) {
-  const req = new XMLHttpRequest();
+  const req = new XMLHttpRequest()
   req.onload = function () {
     if (req.status === 404) {
-      cb(new Error('not found'));
+      cb(new Error('not found'))
     } else {
       // fake spotty server
       const time = Math.random() * 1000
       setTimeout(() => {
-        cb(null, JSON.parse(req.response));
+        cb(null, JSON.parse(req.response))
       }, time)
     }
-  };
-  req.open('GET', url);
-  setToken(req);
-  req.send();
+  }
+  req.open('GET', url)
+  setToken(req)
+  req.send()
 }
 
 function postJSON(url, obj, cb) {
-  var req = new XMLHttpRequest();
+  var req = new XMLHttpRequest()
   req.onload = function () {
-    cb(null, JSON.parse(req.response));
-  };
-  req.open('POST', url);
-  req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-  setToken(req);
-  req.send(JSON.stringify(obj));
+    cb(null, JSON.parse(req.response))
+  }
+  req.open('POST', url)
+  req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
+  setToken(req)
+  req.send(JSON.stringify(obj))
 }
 
 function deleteJSON(url, cb) {
-  var req = new XMLHttpRequest();
+  var req = new XMLHttpRequest()
   req.onload = function () {
     if (req.status === 500)
-      cb(new Error(req.responseText));
+      cb(new Error(req.responseText))
     else
-      cb(null, req.responseText);
-  };
-  req.open('DELETE', url);
-  setToken(req);
-  req.send();
+      cb(null, req.responseText)
+  }
+  req.open('DELETE', url)
+  setToken(req)
+  req.send()
 }
 
 export function fetchContact(id, cb) {
