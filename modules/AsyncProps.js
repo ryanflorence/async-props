@@ -29,7 +29,7 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps(components, params, cb) {
+function loadAsyncProps(components, params, loadContext, cb) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
@@ -46,13 +46,13 @@ function loadAsyncProps(components, params, cb) {
       cb(null, { propsArray, componentsArray })
   }
 
-  // If there is no components we should resolve directly
+  // If there are no components we should resolve directly
   if (needToLoadCounter === 0) {
     return maybeFinish()
   }
 
   components.forEach((Component, index) => {
-    Component.loadProps(params, (error, props) => {
+    Component.loadProps({ params, loadContext }, (error, props) => {
       needToLoadCounter--
       propsArray[index] = props
       componentsArray[index] = Component
@@ -99,14 +99,13 @@ function shallowEqual(a, b) {
   var kb = 0
 
   for (key in a) {
-    if (a.hasOwnProperty(key) && a[key] !== b[key])
+    if (a[key] !== b[key])
       return false
     ka++
   }
 
   for (key in b)
-    if (b.hasOwnProperty(key))
-      kb++
+    kb++
 
   return ka === kb
 }
@@ -118,10 +117,11 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, cb) {
+export function loadPropsOnServer({ components, params }, loadContext, cb) {
   loadAsyncProps(
     filterAndFlattenComponents(components),
     params,
+    loadContext,
     (err, propsAndComponents) => {
       if (err) {
         cb(err)
@@ -274,6 +274,7 @@ class AsyncProps extends React.Component {
   }
 
   loadAsyncProps(components, params, location, options) {
+    const { loadContext } = this.props
     this.setState({
       loading: true,
       prevProps: this.props
@@ -281,14 +282,15 @@ class AsyncProps extends React.Component {
     loadAsyncProps(
       filterAndFlattenComponents(components),
       params,
+      loadContext,
       this.handleError((err, propsAndComponents) => {
-        const force = options && options.force
-        const sameLocation = this.props.location === location
+        const reloading = options && options.reload
+        const didNotChangeRoutes = this.props.location === location
         // FIXME: next line has potential (rare) race conditions I think. If
         // somebody calls reloadAsyncProps, changes location, then changes
         // location again before its done and state gets out of whack (Rx folks
         // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
-        if ((force || sameLocation) && !this._unmounted) {
+        if ((reloading || didNotChangeRoutes) && !this._unmounted) {
           if (this.state.propsAndComponents) {
             propsAndComponents = mergePropsAndComponents(
               this.state.propsAndComponents,
@@ -307,7 +309,7 @@ class AsyncProps extends React.Component {
 
   reloadComponent(Component) {
     const { params } = this.props
-    this.loadAsyncProps([ Component ], params, null, { force: true })
+    this.loadAsyncProps([ Component ], params, null, { reload: true })
   }
 
   render() {
