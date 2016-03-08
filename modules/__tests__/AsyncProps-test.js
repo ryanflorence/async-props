@@ -395,6 +395,33 @@ describe('AsyncProps', () => {
         />
       ), div, next)
     })
+
+    it('allows to override resolver function', (done) => {
+      const appSpy = spyOn(App, 'loadProps').andCallThrough()
+
+      const next = execNext([
+        () => {},
+        () => {
+          expect(appSpy.calls.length).toEqual(1)
+          expect(appSpy.calls[0].arguments[2]).toEqual('check')
+        },
+        done
+      ])
+
+      function resolver(Component, params, cb) {
+        Component.loadProps(params, cb, 'check')
+      }
+
+      App.setAssertions(next)
+
+      render((
+          <Router
+              history={createHistory('/')}
+              routes={routes}
+              render={(props) => <AsyncProps {...props} resolver={resolver} />}
+          />
+      ), div, next)
+    })
   })
 
   describe('server rendering', () => {
@@ -417,6 +444,24 @@ describe('AsyncProps', () => {
       }
       match({ routes: noLoadPropsRoutes, location: '/' }, (err, redirect, renderProps) => {
         loadPropsOnServer(renderProps, done)
+      })
+    })
+
+    it('allows to override resolver function', (done) => {
+      const appSpy = spyOn(App, 'loadProps').andCallThrough()
+      function resolver(Component, params, cb) {
+        Component.loadProps(params, cb, 'check')
+      }
+      const loadPropsRoutes = {
+        path: '/',
+        component: App
+      }
+      match({ routes: loadPropsRoutes, location: '/' }, (err, redirect, renderProps) => {
+        loadPropsOnServer({ ...renderProps, resolver }, () => {
+          expect(appSpy.calls.length).toEqual(1)
+          expect(appSpy.calls[0].arguments[2]).toEqual('check')
+          done()
+        })
       })
     })
 
