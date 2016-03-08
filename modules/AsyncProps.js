@@ -243,7 +243,9 @@ class AsyncProps extends React.Component {
 
   componentDidMount() {
     const { components, params, location } = this.props
-    this.loadAsyncProps(components, params, location)
+    // only load props when we did not got any data from the server-side rendering
+    if(!this.state.propsAndComponents)
+      this.loadAsyncProps(components, params, location)
   }
 
   componentWillReceiveProps(nextProps) {
