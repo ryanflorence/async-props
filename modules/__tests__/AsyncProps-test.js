@@ -1,5 +1,5 @@
 import React from 'react'
-import expect, { spyOn, restoreSpies } from 'expect'
+import expect, { restoreSpies } from 'expect'
 import createHistory from 'react-router/lib/createMemoryHistory'
 import { renderToString } from 'react-dom/server'
 import { render, unmountComponentAtNode } from 'react-dom'
@@ -288,7 +288,6 @@ describe('AsyncProps', () => {
           history.pushState(null, '/1')
         },
         () => expect(div.textContent).toContain('heck yeah! cinnamon life'),
-        () => {},
         () => expect(div.textContent).toContain('heck yeah! berry berry kix'),
         done
       ])
@@ -317,35 +316,6 @@ describe('AsyncProps', () => {
         () => {
           expect(div.textContent).toContain('heck yeah! berry berry kix')
           expect(div.textContent).toContain('ingredients for berry berry kix: sweetness')
-        },
-        done
-      ])
-
-      App.setAssertions(next)
-
-      render((
-        <Router
-          history={history}
-          render={(props) => <AsyncProps {...props}/>}
-          routes={routes}
-        />
-      ), div, next)
-    })
-
-
-    it('does not load props for routes above pivot', (done) => {
-      const appSpy = spyOn(App, 'loadProps').andCallThrough()
-      const cerealSpy = spyOn(Cereal, 'loadProps').andCallThrough()
-      const history = createHistory('/0')
-
-      const next = execNext([
-        () => {},
-        () => {
-          history.pushState(null, '/1')
-        },
-        () => {
-          expect(appSpy.calls.length).toEqual(1)
-          expect(cerealSpy.calls.length).toEqual(2)
         },
         done
       ])
