@@ -35,7 +35,13 @@ function loadAsyncProps(components, params, cb) {
   let propsArray = []
   let needToLoadCounter = components.length
 
-  const maybeFinish = () => {
+  const maybeFinish = (err) => {
+    if ( err ) {
+      // error occured, stop executing
+      cb(err);
+      return;
+    }
+
     if (needToLoadCounter === 0)
       cb(null, { propsArray, componentsArray })
   }
@@ -50,7 +56,7 @@ function loadAsyncProps(components, params, cb) {
       needToLoadCounter--
       propsArray[index] = props
       componentsArray[index] = Component
-      maybeFinish()
+      maybeFinish(error)
     })
   })
 }
