@@ -16,7 +16,8 @@ function execNext(steps) {
 
 const DATA = {
   cereals: [ 'cinnamon life', 'berry berry kix' ],
-  ingredients: [ 'sugar', 'sweetness' ]
+  ingredients: [ 'sugar', 'sweetness' ],
+  nutrition: [ 'lots', 'love' ]
 }
 
 class App extends React.Component {
@@ -84,7 +85,22 @@ class Ingredients extends React.Component {
   }
 
   render() {
-    return <h1>ingredients for {this.props.cereal}: {this.props.ingredients}</h1>
+    return (
+      <div>
+        <h1>ingredients for {this.props.cereal}: {this.props.ingredients}</h1>
+        {this.props.children}
+      </div>
+    )
+  }
+}
+
+class Nutrition extends React.Component {
+  static loadProps(params, cb) {
+    cb(null, { nutrition: DATA.nutrition[params.sub] })
+  }
+
+  render() {
+    return <h1>contains {this.props.nutrition}</h1>
   }
 }
 
@@ -133,7 +149,11 @@ const routes = {
     component: Cereal,
     childRoutes: [ {
       path: 'ingredients',
-      component: Ingredients
+      component: Ingredients,
+      childRoutes: [ {
+        path: ':sub',
+        component: Nutrition
+      } ]
     } ]
   } ]
 }
@@ -288,7 +308,6 @@ describe('AsyncProps', () => {
           history.pushState(null, '/1')
         },
         () => expect(div.textContent).toContain('heck yeah! cinnamon life'),
-        () => {},
         () => expect(div.textContent).toContain('heck yeah! berry berry kix'),
         done
       ])
@@ -393,6 +412,52 @@ describe('AsyncProps', () => {
           render={(props) => <AsyncProps {...props}/>}
           routes={noLoadPropsRoutes}
         />
+      ), div, next)
+    })
+
+    it('only calls loadProps once on route changes', (done) => {
+      const cerealSpy = spyOn(Cereal, 'loadProps').andCallThrough()
+      const history = createHistory('/0')
+
+      const next = execNext([
+        () => expect(cerealSpy.calls.length).toEqual(1),
+        () => history.pushState(null, '/1'),
+        () => expect(cerealSpy.calls.length).toEqual(2),
+        () => history.pushState(null, '/2'),
+        () => expect(cerealSpy.calls.length).toEqual(3),
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+          <Router
+              history={history}
+              render={(props) => <AsyncProps {...props}/>}
+              routes={routes}
+          />
+      ), div, next)
+    })
+
+    it('refreshes when a parent route changes', (done) => {
+      const cerealSpy = spyOn(Cereal, 'loadProps').andCallThrough()
+      const history = createHistory('/0/ingredients/0')
+
+      const next = execNext([
+        () => expect(cerealSpy.calls.length).toEqual(1),
+        () => history.pushState(null, '/1/ingredients/0'),
+        () => expect(cerealSpy.calls.length).toEqual(2),
+        done
+      ])
+
+      App.setAssertions(next)
+
+      render((
+          <Router
+              history={history}
+              render={(props) => <AsyncProps {...props}/>}
+              routes={routes}
+          />
       ), div, next)
     })
   })
