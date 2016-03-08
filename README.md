@@ -83,7 +83,7 @@ render((
 
 ```js
 import { renderToString } from 'react-dom/server'
-import { match, RoutingContext } from 'react-router'
+import { match, RouterContext } from 'react-router'
 import AsyncProps, { loadPropsOnServer } from 'async-props'
 
 app.get('*', (req, res) => {
@@ -92,7 +92,7 @@ app.get('*', (req, res) => {
     // 1. load the props
     loadPropsOnServer(renderProps, (err, asyncProps, scriptTag) => {
 
-      // 2. use `AsyncProps` instead of `RoutingContext` and pass it
+      // 2. use `AsyncProps` instead of `RouterContext` and pass it
       //    `renderProps` and `asyncProps`
       const appHTML = renderToString(
         <AsyncProps {...renderProps} {...asyncProps} />
