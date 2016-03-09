@@ -281,33 +281,34 @@ class AsyncProps extends React.Component {
     this.setState({
       loading: true,
       prevProps: this.props
-    })
-    loadAsyncProps(
-      filterAndFlattenComponents(components),
-      params,
-      loadContext,
-      this.handleError((err, propsAndComponents) => {
-        const reloading = options && options.reload
-        const didNotChangeRoutes = this.props.location === location
-        // FIXME: next line has potential (rare) race conditions I think. If
-        // somebody calls reloadAsyncProps, changes location, then changes
-        // location again before its done and state gets out of whack (Rx folks
-        // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
-        if ((reloading || didNotChangeRoutes) && !this._unmounted) {
-          if (this.state.propsAndComponents) {
-            propsAndComponents = mergePropsAndComponents(
-              this.state.propsAndComponents,
-              propsAndComponents
-            )
+    }, () => {
+      loadAsyncProps(
+        filterAndFlattenComponents(components),
+        params,
+        loadContext,
+        this.handleError((err, propsAndComponents) => {
+          const reloading = options && options.reload
+          const didNotChangeRoutes = this.props.location === location
+          // FIXME: next line has potential (rare) race conditions I think. If
+          // somebody calls reloadAsyncProps, changes location, then changes
+          // location again before its done and state gets out of whack (Rx folks
+          // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
+          if ((reloading || didNotChangeRoutes) && !this._unmounted) {
+            if (this.state.propsAndComponents) {
+              propsAndComponents = mergePropsAndComponents(
+                this.state.propsAndComponents,
+                propsAndComponents
+              )
+            }
+            this.setState({
+              loading: false,
+              propsAndComponents,
+              prevProps: null
+            })
           }
-          this.setState({
-            loading: false,
-            propsAndComponents,
-            prevProps: null
-          })
-        }
-      })
-    )
+        })
+      )
+    })
   }
 
   reloadComponent(Component) {
