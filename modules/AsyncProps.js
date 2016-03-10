@@ -51,7 +51,7 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
 
   components.forEach((Component, index) => {
     Component.loadProps({ params, loadContext }, (error, props) => {
-      if (hasCalledBack[index] && needToLoadCounter !== 0) {
+      if (hasCalledBack[index] && needToLoadCounter === 0) {
         // deferred data
         cb(error, {
           propsArray: [ props ],
