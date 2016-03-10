@@ -31,6 +31,7 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
+  let hasCalledBack = []
 
   const maybeFinish = (err) => {
     if ( err ) {
@@ -50,10 +51,20 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
 
   components.forEach((Component, index) => {
     Component.loadProps({ params, loadContext }, (error, props) => {
-      needToLoadCounter--
-      propsArray[index] = props
-      componentsArray[index] = Component
-      maybeFinish(error)
+      if (hasCalledBack[index] && needToLoadCounter !== 0) {
+        // deferred data
+        cb(error, {
+          propsArray: [ props ],
+          componentsArray: [ Component ]
+        })
+      } else {
+        if (!hasCalledBack[index])
+          needToLoadCounter--
+        propsArray[index] = props
+        componentsArray[index] = Component
+        hasCalledBack[index] = true
+        maybeFinish(error)
+      }
     })
   })
 }

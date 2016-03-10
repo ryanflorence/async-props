@@ -447,4 +447,10 @@ describe('navigating', () => {
   })
 })
 
+describe('deferred loading', () => {
+  it('allows calling back later')
+  describe('when a deferred callback is called before others finish', () => {
+    it('waits for all to finish')
+  })
+})
 
