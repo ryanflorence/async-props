@@ -2,7 +2,6 @@
 import React from 'react'
 import RouterContext from 'react-router/lib/RouterContext'
 import computeChangedRoutes from 'react-router/lib/computeChangedRoutes'
-import getComponents from 'react-router/lib/getComponents'
 
 const { array, func, object } = React.PropTypes
 
@@ -221,11 +220,16 @@ class AsyncProps extends React.Component {
       { routes: nextProps.routes, params: nextProps.params }
     )
 
-    getComponents({ routes: enterRoutes }, (err, components) => {
-      // React Router would handle the `err` before we ever get here
-      const componentsWithLoadProps = filterAndFlattenComponents(components)
-      this.loadAsyncProps(componentsWithLoadProps, nextProps.params, nextProps.location)
-    })
+    const indexDiff = nextProps.components.length - enterRoutes.length
+    const components = []
+    for (let i = 0, l = enterRoutes.length; i < l; i++)
+      components.push(nextProps.components[indexDiff + i])
+
+    this.loadAsyncProps(
+      filterAndFlattenComponents(components),
+      nextProps.params,
+      nextProps.location
+    )
   }
 
   handleError(cb) {

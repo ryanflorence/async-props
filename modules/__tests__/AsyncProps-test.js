@@ -372,15 +372,14 @@ describe('navigating', () => {
   })
 
   describe('to self with new parent params', () => {
-    // FIXME: FAILING!
-    it.skip('calls loadProps on self and parent', (done) => {
+    it('calls loadProps on self and parent', (done) => {
       const referenceSpy = spyOn(Reference, 'loadProps').andCallThrough()
       const childSpy = spyOn(Child, 'loadProps').andCallThrough()
       runNavigationAssertions({
         startPath: '/reference/foo/child/bar',
         steps: [
           ({ push }) => push('/reference/baz/child/bar'),
-          () => {/*loading*/},
+          () => { },
           ({ html }) => {
             expect(referenceSpy.calls.length).toEqual(2)
             expect(childSpy.calls.length).toEqual(2)
