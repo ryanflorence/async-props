@@ -27,46 +27,41 @@ function filterAndFlattenComponents(components) {
 }
 
 function loadAsyncProps({ components, params, loadContext }, cb) {
-  // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
   let hasCalledBack = []
 
   const maybeFinish = (err) => {
-    if ( err ) {
-      // error occured, stop executing
+    if (err)
       cb(err)
-      return
-    }
-
-    if (needToLoadCounter === 0)
+    else if (needToLoadCounter === 0)
       cb(null, { propsArray, componentsArray })
   }
 
   // If there are no components we should resolve directly
   if (needToLoadCounter === 0) {
-    return maybeFinish()
-  }
-
-  components.forEach((Component, index) => {
-    Component.loadProps({ params, loadContext }, (error, props) => {
-      if (hasCalledBack[index] && needToLoadCounter === 0) {
-        // deferred data
-        cb(error, {
-          propsArray: [ props ],
-          componentsArray: [ Component ]
-        })
-      } else {
-        if (!hasCalledBack[index])
-          needToLoadCounter--
-        propsArray[index] = props
-        componentsArray[index] = Component
-        hasCalledBack[index] = true
-        maybeFinish(error)
-      }
+    maybeFinish()
+  } else {
+    components.forEach((Component, index) => {
+      Component.loadProps({ params, loadContext }, (error, props) => {
+        const isDeferredCallback = hasCalledBack[index]
+        if (isDeferredCallback && needToLoadCounter === 0) {
+          cb(error, {
+            propsArray: [ props ],
+            componentsArray: [ Component ]
+          })
+        } else {
+          if (!hasCalledBack[index])
+            needToLoadCounter--
+          propsArray[index] = props
+          componentsArray[index] = Component
+          hasCalledBack[index] = true
+          maybeFinish(error)
+        }
+      })
     })
-  })
+  }
 }
 
 function lookupPropsForComponent(Component, propsAndComponents) {
