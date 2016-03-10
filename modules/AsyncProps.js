@@ -35,8 +35,8 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
   const maybeFinish = (err) => {
     if ( err ) {
       // error occured, stop executing
-      cb(err);
-      return;
+      cb(err)
+      return
     }
 
     if (needToLoadCounter === 0)
@@ -115,16 +115,16 @@ function hydrate(props) {
 }
 
 
-class AsyncPropsContainer extends React.Component {
+const AsyncPropsContainer = React.createClass({
 
-  static propTypes = {
+  propTypes: {
     Component: func.isRequired,
     routerProps: object.isRequired
-  }
+  },
 
-  static contextTypes = {
+  contextTypes: {
     asyncProps: object.isRequired
-  }
+  },
 
   render() {
     const { Component, routerProps, ...props } = this.props
@@ -142,15 +142,15 @@ class AsyncPropsContainer extends React.Component {
     )
   }
 
-}
+})
 
-class AsyncProps extends React.Component {
+const AsyncProps = React.createClass({
 
-  static childContextTypes = {
+  childContextTypes: {
     asyncProps: object
-  }
+  },
 
-  static propTypes = {
+  propTypes: {
     components: array.isRequired,
     params: object.isRequired,
     location: object.isRequired,
@@ -160,34 +160,35 @@ class AsyncProps extends React.Component {
     // server rendering
     propsArray: array,
     componentsArray: array
-  }
+  },
 
-  static defaultProps = {
-    onError(err) {
-      throw err
-    },
+  getDefaultProps() {
+    return {
+      onError(err) {
+        throw err
+      },
 
-    renderLoading() {
-      return null
-    },
+      renderLoading() {
+        return null
+      },
 
-    render(props) {
-      return <RouterContext {...props} createElement={createElement}/>
+      render(props) {
+        return <RouterContext {...props} createElement={createElement}/>
+      }
     }
-  }
+  },
 
-  constructor(props, context) {
-    super(props, context)
+  getInitialState() {
     const { propsArray, componentsArray } = this.props
     const isServerRender = propsArray && componentsArray
-    this.state = {
+    return {
       loading: false,
       prevProps: null,
       propsAndComponents: isServerRender ?
         { propsArray, componentsArray } :
-        hydrate(props)
+        hydrate(this.props)
     }
-  }
+  },
 
   getChildContext() {
     const { loading, propsAndComponents } = this.state
@@ -200,7 +201,7 @@ class AsyncProps extends React.Component {
         }
       }
     }
-  }
+  },
 
   componentDidMount() {
     const wasHydrated = this.state.propsAndComponents !== null
@@ -208,7 +209,7 @@ class AsyncProps extends React.Component {
       const { components, params, location } = this.props
       this.loadAsyncProps(components, params, location)
     }
-  }
+  },
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.location === this.props.location)
@@ -229,7 +230,7 @@ class AsyncProps extends React.Component {
       nextProps.params,
       nextProps.location
     )
-  }
+  },
 
   handleError(cb) {
     return (err, ...args) => {
@@ -238,11 +239,11 @@ class AsyncProps extends React.Component {
       else
         cb(null, ...args)
     }
-  }
+  },
 
   componentWillUnmount() {
     this._unmounted = true
-  }
+  },
 
   loadAsyncProps(components, params, location, options) {
     const { loadContext } = this.props
@@ -276,12 +277,12 @@ class AsyncProps extends React.Component {
         }
       }))
     })
-  }
+  },
 
   reloadComponent(Component) {
     const { params } = this.props
     this.loadAsyncProps([ Component ], params, null, { reload: true })
-  }
+  },
 
   render() {
     const { propsAndComponents } = this.state
@@ -294,6 +295,6 @@ class AsyncProps extends React.Component {
     }
   }
 
-}
+})
 
 export default AsyncProps
