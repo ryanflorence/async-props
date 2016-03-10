@@ -26,7 +26,7 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps(components, params, loadContext, cb) {
+function loadAsyncProps({ components, params, loadContext }, cb) {
   // flatten the multi-component routes
   let componentsArray = []
   let propsArray = []
@@ -88,21 +88,20 @@ function createElement(Component, props) {
 }
 
 export function loadPropsOnServer({ components, params }, loadContext, cb) {
-  loadAsyncProps(
-    filterAndFlattenComponents(components),
+  loadAsyncProps({
+    components: filterAndFlattenComponents(components),
     params,
-    loadContext,
-    (err, propsAndComponents) => {
-      if (err) {
-        cb(err)
-      }
-      else {
-        const json = JSON.stringify(propsAndComponents.propsArray, null, 2)
-        const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
-        cb(null, propsAndComponents, scriptString)
-      }
+    loadContext
+  }, (err, propsAndComponents) => {
+    if (err) {
+      cb(err)
     }
-  )
+    else {
+      const json = JSON.stringify(propsAndComponents.propsArray, null, 2)
+      const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
+      cb(null, propsAndComponents, scriptString)
+    }
+  })
 }
 
 function hydrate(props) {
@@ -251,32 +250,31 @@ class AsyncProps extends React.Component {
       loading: true,
       prevProps: this.props
     }, () => {
-      loadAsyncProps(
-        filterAndFlattenComponents(components),
+      loadAsyncProps({
+        components: filterAndFlattenComponents(components),
         params,
-        loadContext,
-        this.handleError((err, propsAndComponents) => {
-          const reloading = options && options.reload
-          const didNotChangeRoutes = this.props.location === location
-          // FIXME: next line has potential (rare) race conditions I think. If
-          // somebody calls reloadAsyncProps, changes location, then changes
-          // location again before its done and state gets out of whack (Rx folks
-          // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
-          if ((reloading || didNotChangeRoutes) && !this._unmounted) {
-            if (this.state.propsAndComponents) {
-              propsAndComponents = mergePropsAndComponents(
-                this.state.propsAndComponents,
-                propsAndComponents
-              )
-            }
-            this.setState({
-              loading: false,
-              propsAndComponents,
-              prevProps: null
-            })
+        loadContext
+      }, this.handleError((err, propsAndComponents) => {
+        const reloading = options && options.reload
+        const didNotChangeRoutes = this.props.location === location
+        // FIXME: next line has potential (rare) race conditions I think. If
+        // somebody calls reloadAsyncProps, changes location, then changes
+        // location again before its done and state gets out of whack (Rx folks
+        // are like "LOL FLAT MAP LATEST NEWB"). Will revisit later.
+        if ((reloading || didNotChangeRoutes) && !this._unmounted) {
+          if (this.state.propsAndComponents) {
+            propsAndComponents = mergePropsAndComponents(
+              this.state.propsAndComponents,
+              propsAndComponents
+            )
           }
-        })
-      )
+          this.setState({
+            loading: false,
+            propsAndComponents,
+            prevProps: null
+          })
+        }
+      }))
     })
   }
 
