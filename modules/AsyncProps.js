@@ -151,6 +151,7 @@ const AsyncProps = React.createClass({
   },
 
   propTypes: {
+    loadContext: object,
     components: array.isRequired,
     params: object.isRequired,
     location: object.isRequired,
