@@ -22,8 +22,14 @@ const createRunner = (routes, extraProps) => {
     render((
       <Router
         history={history}
-        render={props => <AsyncProps {...props} {...extraProps}/>}
         routes={<Route component={Container} children={routes}/>}
+        render={props => (
+          <AsyncProps
+            {...props}
+            {...extraProps}
+            renderLoading={() => <div>loading</div>}
+          />
+        )}
       />
     ), div, next)
   }
@@ -448,9 +454,78 @@ describe('navigating', () => {
 })
 
 describe('deferred loading', () => {
-  it('allows calling back later')
-  describe('when a deferred callback is called before others finish', () => {
-    it('waits for all to finish')
+
+  const Parent = (props) => <div>{props.name} {props.children}</div>
+  Parent.loadProps = (_, cb) => Parent.cb = cb
+  Parent.fullProps = { name: 'parent' }
+  Parent.callbackFull = () => Parent.cb(null, Parent.fullProps)
+
+  const Child = (props) => <div>{props.partial} {props.full}</div>
+  Child.loadProps = (_, cb) => Child.cb = cb
+  Child.partialProps = { partial: 'partial' }
+  Child.fullProps = { partial: 'partial', full: 'full' }
+  Child.callbackPartial = () => Child.cb(null, Child.partialProps)
+  Child.callbackFull = () => Child.cb(null, Child.fullProps)
+
+  const assertLoadingRender = (html) => {
+    expect(html).toContain('loading')
+  }
+
+  const assertFullPropsRendered = (Component, html) => {
+    for (const key in Component.fullProps)
+      expect(html).toContain(Component.fullProps[key])
+  }
+
+  const assertPartialPropsRendered = (Component, html) => {
+    for (const key in Component.partialProps)
+      expect(html).toContain(Component.partialProps[key])
+  }
+
+  it('renders when called back later', (done) => {
+    createRunner(
+      <Route path="/" component={Parent}>
+        <Route path="child" component={Child}/>
+      </Route>
+    )({
+      startPath: '/child',
+      steps: [
+        ({ html }) => {
+          assertLoadingRender(html)
+          Child.callbackPartial()
+          Parent.callbackFull()
+        },
+        ({ html }) => {
+          assertFullPropsRendered(Parent, html)
+          assertPartialPropsRendered(Child, html)
+          Child.callbackFull()
+        },
+        ({ html }) => {
+          assertFullPropsRendered(Parent, html)
+          assertFullPropsRendered(Child, html)
+          done()
+        }
+      ]
+    })
+  })
+
+  it('waits for all components to callback even if one has called back twice', () => {
+    createRunner(
+      <Route path="/" component={Parent}>
+        <Route path="child" component={Child}/>
+      </Route>
+    )({
+      startPath: '/child',
+      steps: [
+        ({ html }) => {
+          assertLoadingRender(html)
+          Child.callbackPartial()
+          Child.callbackFull()
+        },
+        () => {
+          throw new Error('should not have gotten here yet')
+        }
+      ]
+    })
   })
 })
 
