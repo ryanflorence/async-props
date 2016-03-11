@@ -58,7 +58,7 @@ class App extends React.Component {
 
 class Contact extends React.Component {
 
-  static loadProps(params, cb) {
+  static loadProps({params}, cb) {
     fetchContact(params.contactId, (err, contact) => {
       cb(null, { contact })
     })

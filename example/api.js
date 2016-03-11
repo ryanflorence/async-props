@@ -1,7 +1,7 @@
 localStorage.token = localStorage.token || (Date.now()*Math.random())
 
-//const API = 'http://addressbook-api.herokuapp.com'
-const API = 'http://localhost:3000'
+const API = 'http://addressbook-api.herokuapp.com'
+//const API = 'http://localhost:3000'
 
 function setToken(req) {
   req.setRequestHeader('authorization', localStorage.token)
