@@ -90,7 +90,8 @@ app.get('*', (req, res) => {
   match({ routes, location: req.url }, (err, redirect, renderProps) => {
 
     // 1. load the props
-    loadPropsOnServer(renderProps, (err, asyncProps, scriptTag) => {
+    const loadContext = {}
+    loadPropsOnServer(renderProps, loadContext, (err, asyncProps, scriptTag) => {
 
       // 2. use `AsyncProps` instead of `RoutingContext` and pass it
       //    `renderProps` and `asyncProps`
