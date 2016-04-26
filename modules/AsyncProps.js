@@ -94,6 +94,10 @@ function createElement(Component, props) {
 }
 
 export function loadPropsOnServer({ components, params }, loadContext, cb) {
+  if (typeof loadContext === 'function') {
+    cb = loadContext
+    loadContext = {}
+  }
   loadAsyncProps({
     components: filterAndFlattenComponents(components),
     params,
