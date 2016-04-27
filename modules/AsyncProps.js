@@ -4,6 +4,7 @@ import RouterContext from 'react-router/lib/RouterContext'
 import computeChangedRoutes from 'react-router/lib/computeChangedRoutes'
 
 const { array, func, object } = React.PropTypes
+const PADDING = process.env.NODE_ENV === 'production' ? null : 2;
 
 function eachComponents(components, iterator) {
   for (var i = 0, l = components.length; i < l; i++) {
@@ -103,7 +104,7 @@ export function loadPropsOnServer({ components, params }, loadContext, cb) {
       cb(err)
     }
     else {
-      const json = JSON.stringify(propsAndComponents.propsArray, null, 2)
+      const json = JSON.stringify(propsAndComponents.propsArray, null, PADDING)
       const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
       cb(null, propsAndComponents, scriptString)
     }
