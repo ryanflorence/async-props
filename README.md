@@ -123,6 +123,55 @@ function createPage(html, scriptTag) {
 
 ## API
 
+### setCustomCreateScriptTagMethod
+
+You can use custom `createScriptTag(json)` function to escape html symbols json for example.
+By default, AsyncProps use:
+
+```js
+function createScriptTag(json){
+  return `<script>__ASYNC_PROPS__ = ${json}</script>`
+}
+```
+
+You can specify your own function:
+
+```js
+import { setCreateScriptTagMethod } from 'async-props'
+
+setCreateScriptTagMethod(function(json){
+    return `<script>__ASYNC_PROPS__ = decodeURI(${encodeURI(json)})</script>`
+})
+```
+
+As you see, you function should return `'<script>__ASYNC_PROPS__ =' + some_json_with_optional_wrapping + '</script>'`
+
+
+### setCustomStringifyPropsMethod
+
+You can use custom `stringifyProp(propsArray)` function to minify json on production for example.
+By default, AsyncProps use:
+
+```js
+function (propsArray){
+  return JSON.stringify(propsArray, null, 2)
+}
+```
+
+You can specify your own function:
+
+```js
+import { setStringifyPropsMethod } from 'async-props'
+
+setStringifyPropsMethod(function(propsArray){
+    return JSON.stringify(propsArray)
+})
+```
+
+As you see, you function should String, that you can parse on client.
+
+---------
+
 Please refer to the example, as it exercises the entire API. Docs will
 come eventually :)
 

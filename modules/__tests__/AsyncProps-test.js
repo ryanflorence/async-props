@@ -3,7 +3,7 @@ import expect, { spyOn, restoreSpies } from 'expect'
 import createHistory from 'react-router/lib/createMemoryHistory'
 import { render } from 'react-dom'
 import { Router, Route, match } from 'react-router'
-import AsyncProps, { loadPropsOnServer } from '../AsyncProps'
+import AsyncProps, { loadPropsOnServer, setCreateScriptTagMethod, setStringifyPropsMethod } from '../AsyncProps'
 
 const createRunner = (routes, extraProps) => {
   return ({ startPath, steps }) => {
@@ -143,6 +143,44 @@ describe('server rendering', () => {
         expect(scriptString).toEqual(
           `<script>__ASYNC_PROPS__ = ${JSON.stringify([ DATA ], null, 2)}</script>`
         )
+      })
+    })
+  })
+
+  describe('customise script tag by user', function(){
+    afterEach(function(){
+      setStringifyPropsMethod(function(json){
+        return JSON.stringify(json, null, 2) //default
+      });
+      setCreateScriptTagMethod(function (json){
+        return `<script>__ASYNC_PROPS__ = ${json}</script>`
+      })
+    });
+    it('allow to replace default JSON#stringify() by user stringify method', () => {
+      match({ routes, location: '/' }, (err, redirect, renderProps) => {
+        function someStringifyMethod(props){
+          return JSON.stringify(props);
+        }
+        setStringifyPropsMethod(someStringifyMethod);
+        loadPropsOnServer(renderProps, {}, (err, data, scriptString) => {
+          expect(scriptString).toEqual(
+              `<script>__ASYNC_PROPS__ = ${JSON.stringify([ DATA ])}</script>`
+          )
+        })
+      })
+    })
+
+    it('allow to change script tag with user createScriptTagMethod', () => {
+      match({ routes, location: '/' }, (err, redirect, renderProps) => {
+        function createSomeTag(json){
+          return `<script>__ASYNC_PROPS__ = decodeURIComponent(${json})</script>`
+        }
+        setCreateScriptTagMethod(createSomeTag);
+        loadPropsOnServer(renderProps, {}, (err, data, scriptString) => {
+          expect(scriptString).toEqual(
+              `<script>__ASYNC_PROPS__ = decodeURIComponent(${JSON.stringify([ DATA ], null, 2)})</script>`
+          )
+        })
       })
     })
   })

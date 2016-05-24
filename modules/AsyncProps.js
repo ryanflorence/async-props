@@ -93,6 +93,22 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
+function stringifyProps(propsArray){
+  return JSON.stringify(propsArray, null, 2)
+}
+
+export function setStringifyPropsMethod(newStringifyPropsMethod){
+  stringifyProps = newStringifyPropsMethod;
+}
+
+function createScriptTag(json){
+  return `<script>__ASYNC_PROPS__ = ${json}</script>`
+}
+
+export function setCreateScriptTagMethod(newCreateScriptTagMethod){
+  createScriptTag = newCreateScriptTagMethod;
+}
+
 export function loadPropsOnServer({ components, params }, loadContext, cb) {
   loadAsyncProps({
     components: filterAndFlattenComponents(components),
@@ -103,8 +119,8 @@ export function loadPropsOnServer({ components, params }, loadContext, cb) {
       cb(err)
     }
     else {
-      const json = JSON.stringify(propsAndComponents.propsArray, null, 2)
-      const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
+      const json = stringifyProps(propsAndComponents.propsArray)
+      const scriptString = createScriptTag(json)
       cb(null, propsAndComponents, scriptString)
     }
   })
