@@ -1,13 +1,13 @@
 {
-  "name": "async-props",
-  "version": "0.3.2",
+  "name": "async-props-nfs",
+  "version": "0.4.4",
   "description": "Co-located component data fetching for React Router",
   "main": "lib/AsyncProps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rackt/async-props.git"
+    "url": "https://github.com/NumminorihSF/async-props-nfs.git"
   },
-  "bugs": "https://github.com/rackt/async-props/issues",
+  "bugs": "https://github.com/NumminorihSF/async-props-nfs/issues",
   "scripts": {
     "build": "babel ./modules -d lib --ignore '__tests__'",
     "build-umd": "NODE_ENV=production webpack modules/AsyncProps.js umd/AsyncProps.js",
@@ -18,7 +18,8 @@
     "postinstall": "node ./npm-scripts/postinstall.js"
   },
   "authors": [
-    "Ryan Florence"
+    "Ryan Florence",
+    "Konstantin Petryaev"
   ],
   "license": "MIT",
   "peerDependencies": {

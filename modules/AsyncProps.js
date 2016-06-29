@@ -26,7 +26,7 @@ function filterAndFlattenComponents(components) {
   return flattened
 }
 
-function loadAsyncProps({ components, params, loadContext }, cb) {
+function loadAsyncProps({ components, params, location, loadContext }, cb) {
   let componentsArray = []
   let propsArray = []
   let needToLoadCounter = components.length
@@ -44,7 +44,7 @@ function loadAsyncProps({ components, params, loadContext }, cb) {
     maybeFinish()
   } else {
     components.forEach((Component, index) => {
-      Component.loadProps({ params, loadContext }, (error, props) => {
+      Component.loadProps({ params, location, loadContext }, (error, props) => {
         const isDeferredCallback = hasCalledBack[index]
         if (isDeferredCallback && needToLoadCounter === 0) {
           cb(error, {
@@ -93,18 +93,35 @@ function createElement(Component, props) {
     return <Component {...props}/>
 }
 
-export function loadPropsOnServer({ components, params }, loadContext, cb) {
+function stringifyProps(propsArray){
+  return JSON.stringify(propsArray, null, 2)
+}
+
+export function setStringifyPropsMethod(newStringifyPropsMethod){
+  stringifyProps = newStringifyPropsMethod;
+}
+
+function createScriptTag(json){
+  return `<script>__ASYNC_PROPS__ = ${json}</script>`
+}
+
+export function setCreateScriptTagMethod(newCreateScriptTagMethod){
+  createScriptTag = newCreateScriptTagMethod;
+}
+
+export function loadPropsOnServer({ components, params, location }, loadContext, cb) {
   loadAsyncProps({
     components: filterAndFlattenComponents(components),
     params,
+    location,
     loadContext
   }, (err, propsAndComponents) => {
     if (err) {
       cb(err)
     }
     else {
-      const json = JSON.stringify(propsAndComponents.propsArray, null, 2)
-      const scriptString = `<script>__ASYNC_PROPS__ = ${json}</script>`
+      const json = stringifyProps(propsAndComponents.propsArray)
+      const scriptString = createScriptTag(json)
       cb(null, propsAndComponents, scriptString)
     }
   })
@@ -222,14 +239,15 @@ const AsyncProps = React.createClass({
     if (nextProps.location === this.props.location)
       return
 
-    const { enterRoutes } = computeChangedRoutes(
+    const { enterRoutes, changeRoutes } = computeChangedRoutes(
       { routes: this.props.routes, params: this.props.params },
       { routes: nextProps.routes, params: nextProps.params }
     )
 
-    const indexDiff = nextProps.components.length - enterRoutes.length
+    const checkRoutes = enterRoutes.concat(changeRoutes.filter((route)=>(route.component && route.component.isQueryDepend)))
+    const indexDiff = nextProps.components.length - checkRoutes.length
     const components = []
-    for (let i = 0, l = enterRoutes.length; i < l; i++)
+    for (let i = 0, l = checkRoutes.length; i < l; i++)
       components.push(nextProps.components[indexDiff + i])
 
     this.loadAsyncProps(
@@ -261,6 +279,7 @@ const AsyncProps = React.createClass({
       loadAsyncProps({
         components: filterAndFlattenComponents(components),
         params,
+        location,
         loadContext
       }, this.handleError((err, propsAndComponents) => {
         const reloading = options && options.reload
