@@ -239,14 +239,15 @@ const AsyncProps = React.createClass({
     if (nextProps.location === this.props.location)
       return
 
-    const { enterRoutes } = computeChangedRoutes(
+    const { enterRoutes, changeRoutes } = computeChangedRoutes(
       { routes: this.props.routes, params: this.props.params },
       { routes: nextProps.routes, params: nextProps.params }
     )
 
-    const indexDiff = nextProps.components.length - enterRoutes.length
+    const checkRoutes = enterRoutes.concat(changeRoutes.filter((route)=>(route.component && route.component.isQueryDepend)))
+    const indexDiff = nextProps.components.length - checkRoutes.length
     const components = []
-    for (let i = 0, l = enterRoutes.length; i < l; i++)
+    for (let i = 0, l = checkRoutes.length; i < l; i++)
       components.push(nextProps.components[indexDiff + i])
 
     this.loadAsyncProps(

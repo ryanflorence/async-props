@@ -1,6 +1,6 @@
 {
   "name": "async-props-nfs",
-  "version": "0.4.1",
+  "version": "0.4.4",
   "description": "Co-located component data fetching for React Router",
   "main": "lib/AsyncProps",
   "repository": {
