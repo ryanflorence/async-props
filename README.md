@@ -26,10 +26,10 @@ Then with a module bundler like [webpack](https://webpack.github.io/), use as yo
 import AsyncProps from 'async-props'
 ```
 
-The UMD build is also available on [npmcdn](https://npmcdn.com):
+The UMD build is also available on [unpkg](https://unpkg.com):
 
 ```html
-<script src="https://npmcdn.com/async-props/umd/AsyncProps.min.js"></script>
+<script src="https://unpkg.com/async-props/umd/AsyncProps.min.js"></script>
 ```
 
 You can find the library on `window.AsyncProps`.
